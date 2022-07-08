@@ -5,35 +5,6 @@ from tqdm import tqdm
 from sklearn.linear_model import LinearRegression
 
 
-# quick trick to fit a power law
-# loop through logarithmic sections of the curve
-# find the best fitting linear regression model on each one
-def fit_power_law(logx, logy):
-
-    print('Fitting power law . . .')
-
-    n_data = len(logx)
-
-    logx = logx.reshape(-1, 1)
-    logy = logy.reshape(-1, 1)
-
-    best_reg = LinearRegression(n_jobs=-1)
-    best_reg.fit(logx[:2000], logy[:2000])
-    best_score = best_reg.score(logx[:2000], logy[:2000])
-
-    for i in tqdm(range(1, n_data//2000)):
-
-        new_reg = LinearRegression(n_jobs=-1)
-        new_reg.fit(logx[i : 2000*i], logy[i : 2000*i])
-        new_score = new_reg.score(logx[i : i + 2000], logy[i : i + 2000])
-
-        if new_score > best_score:
-            best_reg = new_reg
-            best_score = new_score
-
-    return best_reg.intercept_.item(), best_reg.coef_[0].item()
-
-
 if __name__ == '__main__':
 
     fig = plt.figure()
@@ -44,15 +15,19 @@ if __name__ == '__main__':
     n_words = len(freqs)
 
     x_vals = [i for i in range(1, 1 + n_words)]
-    logx = np.log10(x_vals)
-    logy = np.log10(freqs)
-    intercept, coef = fit_power_law(logx, logy)
+    logx = np.log10(x_vals[:1000]).reshape(-1, 1)
+    logy = np.log10(freqs[:1000]).reshape(-1, 1)
+    linreg = LinearRegression(n_jobs=-1)
+    linreg.fit(logx, logy)
+    r2 = linreg.score(logx, logy)
+    intercept = linreg.intercept_.item()
+    coef = linreg.coef_[0].item()
 
     ax.loglog(x_vals, freqs, label='Bible')
     ax.loglog(x_vals,
               [(10**intercept)*(x**coef) for x in x_vals],
               label=f'$y={coef:.2f}x+{intercept:.2f}$')
-    ax.set_title('Frequency of Words in the NIV Bible')
+    ax.set_title(f'$Frequency\; of\; Words\; in\; the\; NIV\; Bible,\; R^2 = {r2:.2f}$')
     ax.set_xlabel('Word Rank')
     ax.set_ylabel('Number of Occurrences')
 
