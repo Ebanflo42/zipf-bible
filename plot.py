@@ -26,7 +26,7 @@ if __name__ == '__main__':
     ax.loglog(x_vals, freqs, label='Bible')
     ax.loglog(x_vals,
               [(10**intercept)*(x**coef) for x in x_vals],
-              label=f'$y={coef:.2f}x+{intercept:.2f}$')
+              label=f'$y={coef:.2f}x+{intercept:.2f}$', color='green')
     ax.set_title(f'$Frequency\; of\; Words\; in\; the\; NIV\; Bible,\; R^2 = {r2:.2f}$')
     ax.set_xlabel('Word Rank')
     ax.set_ylabel('Number of Occurrences')
